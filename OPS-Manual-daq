@@ -1,0 +1,153 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{subfigure}
+%\usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
+%\geometry{letterpaper} % or letter or a5paper or ... etc
+% \geometry{landscape} % rotated page geometry
+
+% See the ``Article customise'' template for come common customisations
+
+\title{HPS DAQ Operations Manual v0.1}
+\author{Per Hansson Adrian, Sergey Boiarinov\thanks{Contact person for document.} }
+%\date{} % delete this line to display the current date
+
+%%% BEGIN DOCUMENT
+\begin{document}
+
+\maketitle
+
+\section{System Description}
+The HPS experiment data acquisition (DAQ) handles the acquisition of data for the two sub-detectors: the SVT,  and the ECal. HPS employs two DAQ architectures: the SVT is readout with Advanced Telecom Communications Architecture (ATCA) hardware while the ECal use VXS based hardware. The trigger system receives input from the ECal, and distributes a trigger signal to all detector subsystems to read out a selected event. Figure~\ref{fig:daq} gives a schematic block diagram of the DAQ system.
+%=======================
+\begin{figure}[htbp]
+\begin{center}
+    \includegraphics[width=\textwidth]{daq.png}
+\caption{Schematic overview of the DAQ and trigger system.}
+\label{fig:daq}
+\end{center}
+%\vspace*{-5mm}
+\end{figure}
+%=======================
+For the ECal, every VXS crate contains a Readout Controller (ROC) that collects digitized information, processes it, and sends it on to the Event Builder (EB). The ROC is a single blade Intel-based CPU module running DAQ software under CentOS Linux OS. For the SVT ATCA system, a multi-ROC setup runs on embedded processors situated on the ATCA main board. The EB assembles information from the SVT and ECal ROCs into a single event which is passed to the Event Recorder (ER) that writes it to a RAID5-based data storage system. The DAQ network system is a Foundry router providing high-speed connections between the DAQ components and to the JLab computing facility. 
+
+\section{DAQ Control}
+\label{sec:daq_control}
+
+\subsection{Starting the DAQ from scratch}
+
+\begin{enumerate}
+\item 
+Log into \texttt{clondaq1} as \texttt{clasrun}.
+%\item 
+%If not sure, check that you can open a X window
+%\begin{enumerate}
+%\item 
+%From the terminal clon03:0.1: type \texttt{xterm} and make sure xterminal is opened. If it is not, message "X11 connection rejected because of wrong authentication." will show up. If not continue:
+%\item 
+%Kill xwindow, start new one (you will be on \texttt{clon03}) and log into \texttt{clon10}.  Make sure \texttt{xterm} command can open xterminal.
+%\end{enumerate}
+\item 
+To start all DAQ processes, type the following command in a terminal: \texttt{hps\_start}.
+This opens up all windows and GUIs needed on the current workspace. 
+\item
+The workspace should look like Fig.~\ref{fig:coda}.
+\end{enumerate}
+%=======================
+\begin{figure}[htbp]
+\begin{center}
+    \includegraphics[width=\textwidth]{coda_view.png}
+\caption{CODA workspace.}
+\label{fig:coda}
+\end{center}
+%\vspace*{-5mm}
+\end{figure}
+%=======================
+
+
+\subsection{Starting a normal run}
+\begin{enumerate}
+\item
+Make sure beam conditions are stable and ready for running. See beam line manual for more details.
+\item
+Make sure the ECal is powered and its status is OK. See ECal manual for more details.
+\item
+Make sure the SVT is powered and its status is OK. See SVT manual for more details.
+\item
+Make sure the SVT position is appropriate for the run. {\bf Check with shift leader if not sure.}
+\item
+Check that the DAQ workspace is ready to go (see Section above how to start the DAQ).
+\item
+{\bf If continuing with same the same run configuration from a stopped run continue to \ref{item:prestart}.}
+\item
+In the \texttt{RunControl} GUI: click \texttt{connect}, a new GUI opens.
+\item
+Click on \texttt{DAQ Configuration} and choose the \texttt{HPS} configuration.
+\item
+Press \texttt{Config} in the same GUI and choose run configuration file. Click OK.
+\item
+Make sure that datafile name, daq configuration and run configuration file name shown on \texttt{RunControl} GUI are correct.
+\item
+\label{item:download}
+Press \texttt{Download}. When \texttt{Prestart} button shows up the DAQ is ready to take data. 
+\item
+\label{item:prestart}
+Press \texttt{Prestart} and wait between 5 and 10s and no errors are reported. 
+\item
+Press \texttt{Start Run} to start data taking. Check that the run status is 'running' and that triggers are issued.
+\end{enumerate}
+
+\subsection{Stopping a run}
+\begin{enumerate}
+\item
+Go to the \texttt{RunControl}  GUI and press \texttt{End Run} to stop data taking. Check that the run status is 'stopped' and that triggers are not issued.
+\end{enumerate}
+
+\subsection{Stopping and restarting the DAQ in case of problems}
+
+\subsubsection{Stopping the DAQ}
+If DAQ problems occur and restarting the run do not work all DAQ processes can be restarted by typing:
+\begin{enumerate}
+\item
+\texttt{hps\_exit} in a terminal on \texttt{clondaq1}
+% In the CODA run GUI: click \texttt{End Run} or \texttt{Abort} (whatever button is active)
+%\item
+%Click \texttt{Cancel}
+%\item
+%Run \texttt{roc\_status} command from \texttt{clon10} terminal window: it will show troubled ROC(s) as {\sc UNDEFINED} or {\sc active}
+%\item
+%Click \texttt{Reset}.
+%\item
+%From \texttt{clon10} window, try to reboot troubled ROC(s) using command \texttt{roc\_reboot <roc>}.
+%\item
+%If rebooting any ROC, reboot \texttt{clastrig2} as well
+%\item
+%Wait 2 minutes and run \texttt{roc\_status} again; rebooted ROC(s) must be in \texttt{booted} stage.
+%\item
+%Go to \texttt{EB\_TERM} window and issue \texttt{Ctrl-C} and run previous command using the up arrow on the keyboard(the command should be \texttt{coda\_eb ...}).
+%\item
+%Start new run from \texttt{Download} stage above.
+\end{enumerate}
+
+This will cleanup all processes and you can restart by following the procedures above. 
+
+\subsubsection{Restarting the DAQ in case of problems}
+Sometimes hardware reset needed to bring DAQ system back to normal. For HPS there are four VME/VXS crates:  \texttt{hps11},  \texttt{hps12},  \texttt{hps1} and  \texttt{hps2}. These can be power cycled to try and get back into the normal state. Crate \texttt{hps11} is a master, so it have to be rebooter first, followed by others.
+To reboot, do the following:
+\begin{enumerate}
+\item
+Type command \texttt{roc\_reboot hps11} in a terminal.  
+\item 
+Type command \texttt{roc\_reboot crate\_id} in the same terminal where \texttt{crate\_id} is \texttt{hps12},  \texttt{hps1} or  \texttt{hps2}.
+\end{enumerate}
+
+If it does not help or you are unsure, contact the DAQ expert. 
+
+
+%\section{Monitoring}
+%\subsection{Trigger and DAQ}
+%\subsection{ECal}
+%\subsection{SVT}
+
+
+
+\end{document}
